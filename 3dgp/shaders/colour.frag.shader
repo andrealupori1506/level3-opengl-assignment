@@ -13,6 +13,9 @@ const vec3 lum = vec3(0.299, 0.587, 0.114); // B&W filter
 // Output Variable (sent down through the Pipeline)
 out vec4 outColor;
 
+// Toon lines toggle
+uniform bool toonLinesToggle; 
+
 void main(void)
 {
     float s00 = dot(lum, texture(texture0, texCoord0 + vec2(-1, 1) / resolution).rgb);
@@ -31,8 +34,14 @@ void main(void)
 
     if (s > edgeThreshold)
     {
-        //outColor = vec4(0,0,0,1);
-        outColor = texture(texture0, texCoord0);
+        if(toonLinesToggle)
+        {
+            outColor = vec4(0,0,0,1);
+        }
+        else
+        {
+            outColor = texture(texture0, texCoord0);
+        }
     }
     else
     {

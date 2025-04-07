@@ -41,13 +41,13 @@ unsigned indices[] = {
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 13, 14, 15 };
 
 // 3D models
-C3dglModel wallSegment, floorTile, table, teapot, vase, mug, lamp, ceilingLamp;
+C3dglModel cat, wallSegment, floorTile, table, teapot, vase, mug, lamp, ceilingLamp;
 
 // Textures
 // null texture
 GLuint idTexNone;
 // base maps
-GLuint idTexWall, idTexTable, idTexChair, idTexTeapot, idTexSmokeParticle;
+GLuint idTexCat, idTexWall, idTexTable, idTexChair, idTexTeapot, idTexSmokeParticle;
 
 // normal maps
 GLuint idTexTableNormal, idTexChairNormal, idTexTeapotNormal;
@@ -83,8 +83,11 @@ vec3 bulbOffV = vec3(0, 0, 0);
 vec3 spotLightLoc = vec3(0.f, 12.f, 0.f);
 
 // ambient room light
-vec3 ambientRoomLight = vec3(0.15f, 0.15f, 0.15f);
+vec3 ambientRoomLight = vec3(0.15f, 0.01f, 0.15f);
+vec3 ambientRoomMaterial = vec3(0.0f, 0.0f, 0.0f);
 
+// Toon toogle
+bool toonLinesOn = false;
 
 // Camera & navigation
 float maxspeed = 4.f;	// camera max speed
@@ -173,6 +176,7 @@ bool init()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// Load 3D models 
+	if (!cat.load("models\\Animated Model\\CatModel.fbx")) return false;
 	if (!table.load("models\\table.obj")) return false;
 	if (!teapot.load("models\\utah_teapot_hires.obj")) return false;
 	if (!vase.load("models\\vase.obj")) return false;
@@ -184,6 +188,7 @@ bool init()
 
 	// Load Textures ----------------------------------------------------------------------------------------------------------------------------------
 	// Base maps
+
 	// wall AND floor texture
 	C3dglBitmap wallTexture;
 	wallTexture.load("models/textures/tiny_treats_texture_1.png", GL_RGBA);
@@ -275,6 +280,7 @@ bool init()
 	// directional light
 	program.sendUniform("lightDir.direction", vec3(1.0, 0.5, 0.5));
 	program.sendUniform("lightDir.diffuse", vec3(1, 1, 1));
+	//program.sendUniform("lightDir.diffuse", vec3(0, 0, 0));
 
 	// point lightS
 	program.sendUniform("lightPoint1.position", bulbLoc1);
@@ -282,8 +288,12 @@ bool init()
 
 	// spot light
 	program.sendUniform("spotLight.position", spotLightLoc);
-	program.sendUniform("spotLight.diffuse", vec3(1,1, 1));
+	program.sendUniform("spotLight.diffuse", vec3(1,1,1));
 	program.sendUniform("spotLight.specular", vec3(0.5, 0.5, 0.5));
+
+	//program.sendUniform("spotLight.diffuse", vec3(0, 0, 0));
+	//program.sendUniform("spotLight.specular", vec3(0, 0, 0));
+
 	program.sendUniform("spotLight.direction", vec3(0, -1, 0));
 	program.sendUniform("spotLight.cutoff", radians(45.f));
 	program.sendUniform("spotLight.attenuation", 7.f);
@@ -369,6 +379,9 @@ bool init()
 
 	// switch back to window-system-provided framebuffer
 	glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+
+	// set toon toggle
+	programEffect.sendUniform("toonLinesToggle", toonLinesOn);
 
 	// Second pass --------------------------------------------------------------------------------
 	// Create Quad
@@ -517,9 +530,9 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	glBindTexture(GL_TEXTURE_2D, idTexNone);
 
 	// setup material - blue
-	program.sendUniform("materialAmbient", ambientRoomLight);
-	program.sendUniform("materialDiffuse", vec3(0, 0, 0.5));
-	program.sendUniform("shininess", 2.0);
+	program.sendUniform("materialAmbient", ambientRoomMaterial);
+	program.sendUniform("materialDiffuse", vec3(0.0784, 0.5411, 0.9804));
+	program.sendUniform("shininess", 8.0);
 
 	// vase
 	m = matrixView;
@@ -532,7 +545,7 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	
 	// the lamp holder 1 ---------------------------------------------------------------------------
 	// setup material - red
-	program.sendUniform("materialDiffuse", vec3(0.2, 0.0, 0.0));
+	program.sendUniform("materialDiffuse", vec3(0.3, 0.0, 0.0));
 	m = matrixView;
 	m = translate(m, vec3(-2.7f, 3.8f, -1.0f));
 	m = rotate(m, radians(30.f), vec3(0.0f, 1.0f, 0.0f));
@@ -540,8 +553,8 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	program.sendUniform("matrixModelView", m);
 	lamp.render(m);
 	// lamp holder 2
-		// setup material - blue
-	program.sendUniform("materialDiffuse", vec3(0.0, 0.0, 0.2));
+	// setup material - green
+	program.sendUniform("materialDiffuse", vec3(0.0, 0.36222, 0.194117));
 	m = matrixView;
 	m = translate(m, vec3(2.5f, 3.8f, 1.0f));
 	m = rotate(m, radians(240.f), vec3(0.0f, 1.0f, 0.0f));
@@ -549,7 +562,7 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	program.sendUniform("matrixModelView", m);
 	lamp.render(m);
 
-
+	program.sendUniform("materialAmbient", vec3(0.3, 0.3, 0.3));
 	if (bulbOff1)
 	{
 		program.sendUniform("lightPoint1.diffuse", bulbOffV);
@@ -572,7 +585,7 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	program.sendUniform("matrixModelView", m);
 	glutSolidSphere(1, 32, 32);
 	program.sendUniform("lightAmbient.color", vec3(0.1, 0.1, 0.1));
-	program.sendUniform("materialAmbient", ambientRoomLight);
+	program.sendUniform("materialAmbient", vec3(0.3, 0.3, 0.3));
 
 	if (bulbOff2)
 	{
@@ -594,7 +607,7 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	program.sendUniform("matrixModelView", m);
 	glutSolidSphere(1, 32, 32);
 	program.sendUniform("lightAmbient.color", vec3(0.1, 0.1, 0.1));
-	program.sendUniform("materialAmbient", ambientRoomLight);
+	program.sendUniform("materialAmbient", vec3(0.3, 0.3, 0.3));
 
 	// Spot light ------------------------------------------------------------------------
 	// Pendulum mechanics
@@ -606,7 +619,7 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 
 	// Ceiling lamp
 	program.sendUniform("materialAmbient", ambientRoomLight);
-	program.sendUniform("materialDiffuse", vec3(0.2, 0.15, 0.1));	// colour dark brown
+	program.sendUniform("materialDiffuse", vec3(0.2, 0.15, 0.1));	
 	m = matrixView;
 	m = translate(m, spotLightLoc);
 	m = rotate(m, radians(alpha), vec3(0.5, 0, 1));
@@ -618,7 +631,7 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 
 	// Bulb
 	program.sendUniform("lightAmbient.color", vec3(1, 1, 0.9));
-	program.sendUniform("materialAmbient", ambientRoomLight);
+	program.sendUniform("materialAmbient", vec3(1, 1, 0.9));
 	program.sendUniform("materialDiffuse", vec3(0.6, 0.6, 0.6));
 	m = m1;
 	m = translate(m, vec3(0, 3.96f, 0));
@@ -627,8 +640,8 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	program.sendUniform("spotLight.matrix", m);
 	glutSolidSphere(1, 32, 32);
 
-	program.sendUniform("lightAmbient.color", vec3(0.1, 0.1, 0.1));
-	program.sendUniform("materialAmbient", ambientRoomLight);
+	program.sendUniform("lightAmbient.color", ambientRoomLight);
+	program.sendUniform("materialAmbient", ambientRoomMaterial);
 
 	// ---------------------------------------------------------------------------------------
 
@@ -637,7 +650,8 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	GLuint attribNormal = program.getAttribLocation("aNormal");
 
 	// setup material - yellow
-	program.sendUniform("materialDiffuse", vec3(0.6f, 0.6f, 0.f));
+	program.sendUniform("materialAmbient", ambientRoomMaterial);
+	program.sendUniform("materialDiffuse", vec3(0.937255f, 0.611765f, 0.05098f));
 
 	// triangle
 	// enable the vertex and normal attributes
@@ -671,7 +685,7 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	glDisableVertexAttribArray(attribNormal);
 
 	// setup material - pink
-	program.sendUniform("materialDiffuse", vec3(0.6f, 0.2f, 0.6f));
+	program.sendUniform("materialDiffuse", vec3(0.8745f, 0.2f, 0.6f));
 
 	// mug that sits on the triangle
 	m = matrixView;
@@ -680,6 +694,10 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	m = scale(m, vec3(1.2f, 1.2f, 1.2f));
 	program.sendUniform("matrixModelView", m);
 	mug.render(m);
+
+	m = matrixView;
+	m = scale(m, vec3(100.f, 100.f, 100.f));
+	cat.render(m);
 
 
 	// RENDER THE PARTICLE SYSTEM
@@ -803,6 +821,12 @@ void onKeyDown(unsigned char key, int x, int y)
 	case 'q': _acc.y = -accel; break;
 	case '1': bulbOff1 = !bulbOff1; break;
 	case '2': bulbOff2 = !bulbOff2; break;
+	case '3':
+	{
+		toonLinesOn = !toonLinesOn; 
+		programEffect.sendUniform("toonLinesToggle", toonLinesOn);
+		break;
+	}
 	}
 }
 
