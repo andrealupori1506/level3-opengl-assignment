@@ -65,7 +65,7 @@ void main(void)
 	pos =  matrixModelView * matrixBone * vec4(aVertex, 1.0);
 	gl_Position = matrixProjection * pos;
 	
-    N = normalize(mat3(matrixModelView) * aNormal);
+    N = normalize(mat3(matrixModelView) * mat3(matrixBone) * aNormal);
 	
 	// pass through texture co-ordinates for the fragment shader
     texCoord0 = aTexCoord;

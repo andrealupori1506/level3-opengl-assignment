@@ -89,6 +89,8 @@ vec3 ambientRoomMaterial = vec3(0.0f, 0.0f, 0.0f);
 // Toon toogle
 bool toonLinesOn = false;
 
+
+
 // Camera & navigation
 float maxspeed = 4.f;	// camera max speed
 float accel = 4.f;		// camera acceleration
@@ -383,6 +385,9 @@ bool init()
 	// set toon toggle
 	programEffect.sendUniform("toonLinesToggle", toonLinesOn);
 
+	// load cat animations
+	cat.loadAnimations();
+
 	// Second pass --------------------------------------------------------------------------------
 	// Create Quad
 	float quadVertices[] = {
@@ -429,7 +434,6 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 
 	// wall segments -------------------------------------------------------------------------------
 	// texturing
-
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, idTexWall);
 
@@ -695,8 +699,14 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	program.sendUniform("matrixModelView", m);
 	mug.render(m);
 
+	// Cat Animation set up
+	std::vector<mat4> transforms;
+	cat.getAnimData(0, time, transforms);
+	program.sendUniform("bones", &transforms[0], transforms.size());
+
 	m = matrixView;
-	m = scale(m, vec3(100.f, 100.f, 100.f));
+	m = translate(m, vec3(0, 0, 0));
+	m = scale(m, vec3(10.f, 10.f, 10.f));
 	cat.render(m);
 
 
