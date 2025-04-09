@@ -5,7 +5,7 @@ in vec2 texCoord0;
 
 // Uniform: The Texture
 uniform sampler2D texture0;
-uniform vec2 resolution = vec2(800, 600);
+uniform vec2 resolution = vec2(1280, 720);
 
 const float edgeThreshold = 0.25;
 const vec3 lum = vec3(0.299, 0.587, 0.114); // B&W filter
@@ -41,6 +41,11 @@ void main(void)
         else
         {
             outColor = texture(texture0, texCoord0);
+            // saturation code courtesy of "minus34" on Github - reference in report
+            const vec4 W = vec4(0.2125, 0.7154, 0.0721,1);
+            vec4 intensity = vec4(dot(outColor, W));
+            vec4 color = vec4(mix(intensity, outColor, 1.15f));
+            outColor += color;
         }
     }
     else
@@ -52,5 +57,7 @@ void main(void)
         vec4 color = vec4(mix(intensity, outColor, 1.15f));
         outColor += color;
     }        
+
+
 
 }

@@ -706,7 +706,7 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 
 	m = matrixView;
 	m = translate(m, vec3(0, 0, 0));
-	m = scale(m, vec3(10.f, 10.f, 10.f));
+	m = scale(m, vec3(0.1f, 0.1f, 0.1f));
 	cat.render(m);
 
 
