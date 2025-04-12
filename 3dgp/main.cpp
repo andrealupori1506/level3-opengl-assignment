@@ -190,14 +190,14 @@ bool init()
 	if (!ceilingLamp.load("models\\ceilinglamp.3ds")) return false;
 
 	// cat model and animations
-	walk.load("models\\Animated Model\\Cat_Original_walk_cycle");
-	jump.load("models\\Animated Model\\Cat_Jump_No_ref");
-	swat.load("models\\Animated Model\\Cat_swat_No_ref");
+	walk.load("models\\Animated Model\\Cat_Original_walk_cycle.fbx");
+	jump.load("models\\Animated Model\\Cat_Jump_No_ref.fbx");
+	swat.load("models\\Animated Model\\Cat_swat_No_ref.fbx");
 
 	if (!cat.load("models\\Animated Model\\CatModel.fbx")) return false;
 	cat.loadAnimations(&walk);
-	cat.loadAnimations(&jump);
-	cat.loadAnimations(&swat);
+	//cat.loadAnimations(&jump);
+	//cat.loadAnimations(&swat);
 	// Load Textures ----------------------------------------------------------------------------------------------------------------------------------
 	// Base maps
 
@@ -724,14 +724,16 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	// setup material - pink
 	program.sendUniform("materialDiffuse", vec3(1.f, 1.f, 1.f));
 
-	std::vector<mat4> transforms;
-	cat.getAnimData(0, time, transforms);
-	program.sendUniform("bones", &transforms[0], transforms.size());
+	std::vector<mat4> walkTransforms;
+	cat.getAnimData(0, time, walkTransforms);
+	program.sendUniform("bones", &walkTransforms[0], walkTransforms.size());
+
 
 	m = matrixView;
 	m = translate(m, vec3(1.5f+pos.x, 0.6f, 1.5f + pos.z));
-	m = rotate(m, radians(50.0f), vec3(0.0f, 1.0f, 0.0f));
-	m = scale(m, vec3(0.005f, 0.005f, 0.005f));
+	//m = translate(m, vec3(1, 0.6f, 1));
+	m = rotate(m, radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
+	m = scale(m, vec3(0.00005f, 0.00005f, 0.00005f));
 	cat.render(m);
 
 

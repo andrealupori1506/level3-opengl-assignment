@@ -53,6 +53,7 @@ vec4 AmbientLight(AMBIENT light)
 void main(void) 
 {
 	mat4 matrixBone;
+
 	if (aBoneWeight[0] == 0.0)
 		matrixBone = mat4(1);
 	else
