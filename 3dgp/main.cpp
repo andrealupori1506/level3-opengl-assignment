@@ -42,6 +42,8 @@ unsigned indices[] = {
 
 // 3D models
 C3dglModel cat, wallSegment, floorTile, table, teapot, vase, mug, lamp, ceilingLamp;
+// skinless animations
+C3dglModel walk, jump, swat;
 
 // Textures
 // null texture
@@ -178,7 +180,6 @@ bool init()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// Load 3D models 
-	if (!cat.load("models\\Animated Model\\CatModel.fbx")) return false;
 	if (!table.load("models\\table.obj")) return false;
 	if (!teapot.load("models\\utah_teapot_hires.obj")) return false;
 	if (!vase.load("models\\vase.obj")) return false;
@@ -188,8 +189,27 @@ bool init()
 	if (!wallSegment.load("models\\wall_tiles_kitchen_straight.obj")) return false;
 	if (!ceilingLamp.load("models\\ceilinglamp.3ds")) return false;
 
+	// cat model and animations
+	walk.load("models\\Animated Model\\Cat_Original_walk_cycle");
+	jump.load("models\\Animated Model\\Cat_Jump_No_ref");
+	swat.load("models\\Animated Model\\Cat_swat_No_ref");
+
+	if (!cat.load("models\\Animated Model\\CatModel.fbx")) return false;
+	cat.loadAnimations(&walk);
+	cat.loadAnimations(&jump);
+	cat.loadAnimations(&swat);
 	// Load Textures ----------------------------------------------------------------------------------------------------------------------------------
 	// Base maps
+
+	// cat texture
+	C3dglBitmap catTexture;
+	catTexture.load("models/Animated Model/Tex_Cat_Carrot.jpg", GL_RGBA);
+	if (!catTexture.getBits()) return false;
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &idTexCat);
+	glBindTexture(GL_TEXTURE_2D, idTexCat);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, catTexture.getWidth(), catTexture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, catTexture.getBits());
 
 	// wall AND floor texture
 	C3dglBitmap wallTexture;
@@ -385,9 +405,6 @@ bool init()
 	// set toon toggle
 	programEffect.sendUniform("toonLinesToggle", toonLinesOn);
 
-	// load cat animations
-	cat.loadAnimations();
-
 	// Second pass --------------------------------------------------------------------------------
 	// Create Quad
 	float quadVertices[] = {
@@ -406,8 +423,8 @@ bool init()
 	// Initialise the View Matrix (initial position of the camera) --------------------------------------------
 	matrixView = rotate(mat4(1), radians(12.f), vec3(1, 0, 0));
 	matrixView *= lookAt(
-		vec3(0.0, 5.0, 10.0),
-		vec3(0.0, 5.0, 0.0),
+		vec3(-10.0, 3.0, 0.0),
+		vec3(0.0, 1.0, 10.0),
 		vec3(0.0, 1.0, 0.0));
 
 	// setup the screen background colour
@@ -427,6 +444,8 @@ bool init()
 void renderScene(mat4& matrixView, float time, float deltaTime)
 {
 	mat4 m;
+	// Camera position
+	vec3 pos = getPos(matrixView);
 
 	// setup material - grey
 
@@ -700,13 +719,19 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	mug.render(m);
 
 	// Cat Animation set up
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, idTexCat);
+	// setup material - pink
+	program.sendUniform("materialDiffuse", vec3(1.f, 1.f, 1.f));
+
 	std::vector<mat4> transforms;
 	cat.getAnimData(0, time, transforms);
 	program.sendUniform("bones", &transforms[0], transforms.size());
 
 	m = matrixView;
-	m = translate(m, vec3(0, 0, 0));
-	m = scale(m, vec3(0.1f, 0.1f, 0.1f));
+	m = translate(m, vec3(1.5f+pos.x, 0.6f, 1.5f + pos.z));
+	m = rotate(m, radians(50.0f), vec3(0.0f, 1.0f, 0.0f));
+	m = scale(m, vec3(0.005f, 0.005f, 0.005f));
 	cat.render(m);
 
 
