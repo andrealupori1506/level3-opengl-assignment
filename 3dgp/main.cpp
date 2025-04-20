@@ -41,12 +41,13 @@ unsigned indices[] = {
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 13, 14, 15 };
 
 // 3D models
-C3dglModel cat, wallSegment, floorTile, table, teapot, vase, mug, lamp, ceilingLamp;
+C3dglModel cat, wallSegment, wallWindow, floorTile, table, teapot, vase, mug, lamp, ceilingLamp;
 // skinless animations
-C3dglModel walk, jump, swat;
-float animTime;
-bool catMoving;
-mat4 catMatrix;
+C3dglModel walk, swat;
+float animTime, swattingAnimTime, currentCatRot;
+bool catMoving, catSwatting;
+bool catCamOn = true;
+vec3 currentCatPos;
 
 // Textures
 // null texture
@@ -190,17 +191,18 @@ bool init()
 	if (!lamp.load("models\\lamp.obj")) return false;
 	if (!floorTile.load("models\\floor_tiles_kitchen.obj")) return false;
 	if (!wallSegment.load("models\\wall_tiles_kitchen_straight.obj")) return false;
+	if (!wallWindow.load("models\\wall_tiles_kitchen_window.obj")) return false;
 	if (!ceilingLamp.load("models\\ceilinglamp.3ds")) return false;
 
 	// cat model and animations
 	walk.load("models\\Animated Model\\Cat_Original_walk_cycle.fbx");
-	jump.load("models\\Animated Model\\Cat_Jump_No_ref.fbx");
+	//jump.load("models\\Animated Model\\Cat_Jump_No_ref.fbx");
 	swat.load("models\\Animated Model\\Cat_swat_No_ref.fbx");
 
 	if (!cat.load("models\\Animated Model\\CatModel.fbx")) return false;
 	cat.loadAnimations(&walk);
-	cat.loadAnimations(&jump);
-	//cat.loadAnimations(&swat);
+	//cat.loadAnimations(&jump);
+	cat.loadAnimations(&swat);
 	// Load Textures ----------------------------------------------------------------------------------------------------------------------------------
 	// Base maps
 
@@ -436,9 +438,12 @@ bool init()
 	cout << endl;
 	cout << "Use:" << endl;
 	cout << "  WASD or arrow key to navigate" << endl;
+	cout << "  F to swat" << endl;
 	cout << "  QE or PgUp/Dn to move the camera up and down" << endl;
 	cout << "  Shift to speed up your movement" << endl;
 	cout << "  Drag the mouse to look around" << endl;
+	cout << "  3 to toggle cartoon shader" << endl;
+	cout << "  4 to toggle cat cam" << endl;
 	cout << endl;
 
 	return true;
@@ -471,17 +476,33 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 			for (int j = 0; j < 20; j++)
 			{
 				float xTranslation, zTranslation;
-				if (eachSide == 0) { xTranslation = -14.0f + (2 * i); zTranslation = -8.0f; }		// facing south
-				else if (eachSide == 1) { xTranslation = -14.0f; zTranslation = -8.0f + (2 * j); }	// facing east
-				else if (eachSide == 2) { xTranslation = -14.0f + (2 * i); zTranslation = 30; }		// facing north
-				else if (eachSide == 3) { xTranslation = 30.0f; zTranslation = -8.0f + (2 * j); }	// facing west
+				if (j != 10&&i!=12) {		// creates empty spaces for windows
+					if (eachSide == 0) { xTranslation = -14.0f + (2 * i); zTranslation = -8.0f; }		// facing south
+					else if (eachSide == 1) { xTranslation = -14.0f; zTranslation = -8.0f + (2 * j); }	// facing east
+					else if (eachSide == 2) { xTranslation = -14.0f + (2 * i); zTranslation = 30; }		// facing north
+					else if (eachSide == 3) { xTranslation = 30.0f; zTranslation = -8.0f + (2 * j); }	// facing west
+					m = matrixView;
+					m = scale(m, vec3(1.2f, 2.2f, 1.2f));
+					m = translate(m, vec3(xTranslation, 0.25f, zTranslation));
+					m = rotate(m, radians(90.f * eachSide), vec3(0.0f, 1.0f, 0.0f));
+					program.sendUniform("matrixModelView", m);
+					wallSegment.render(m);
+				}
+				else if (j == 10 && i == 12)	// fills out windows
+				{
+					if (eachSide == 0) { xTranslation = -14.0f + (2 * i); zTranslation = -8.0f; }		// facing south
+					else if (eachSide == 1) { xTranslation = -14.0f; zTranslation = -8.0f + (2 * j); }	// facing east
+					else if (eachSide == 2) { xTranslation = -14.0f + (2 * i); zTranslation = 30; }		// facing north
+					else if (eachSide == 3) { xTranslation = 30.0f; zTranslation = -8.0f + (2 * j); }	// facing west
 
-				m = matrixView;
-				m = scale(m, vec3(1.2f, 2.2f, 1.2f));
-				m = translate(m, vec3(xTranslation, 0.25f, zTranslation));
-				m = rotate(m, radians(90.f * eachSide), vec3(0.0f, 1.0f, 0.0f));
-				program.sendUniform("matrixModelView", m);
-				wallSegment.render(m);
+					m = matrixView;
+					m = scale(m, vec3(1.2f, 2.2f, 1.2f));
+					m = translate(m, vec3(xTranslation, 0.25f, zTranslation));
+					m = rotate(m, radians(90.f * eachSide), vec3(0.0f, 1.0f, 0.0f));
+					program.sendUniform("matrixModelView", m);
+					wallWindow.render(m);
+				}
+				
 			}
 		}
 	}
@@ -610,8 +631,22 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	m = scale(m, vec3(0.15f, 0.15f, 0.15f));
 	program.sendUniform("matrixModelView", m);
 	glutSolidSphere(1, 32, 32);
+	for (int i = 0; i < 4; i++)
+	{
+		m = matrixView;
+		if (i==0) m = translate(m, vec3(-12.0f + (2 * 12), 5, -11.6f));
+		if (i==1) m = translate(m, vec3(-18.8f , 5, 15)); //xTranslation = -14.0f; zTranslation = -8.0f + (2 * j);
+		if (i==2) m = translate(m, vec3(12.0f, 5, 38)); //{ xTranslation = -14.0f + (2 * i); zTranslation = 30; }
+		if (i==3) m = translate(m, vec3(38.0f, 5, 15)); //{ xTranslation = 30.0f; zTranslation = -8.0f + (2 * j); }
+		program.sendUniform("matrixModelView", m);
+		glutSolidCube(4);
+	}
+	
 	program.sendUniform("lightAmbient.color", vec3(0.1, 0.1, 0.1));
 	program.sendUniform("materialAmbient", vec3(0.3, 0.3, 0.3));
+
+	
+
 
 	if (bulbOff2)
 	{
@@ -724,30 +759,50 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	// Cat Animation set up
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, idTexCat);
+
+	std::vector<mat4> walkTransforms;
+	std::vector<mat4> swatTransforms;
+	
 	if (catMoving)
 	{
 		animTime = time;
+		cat.getAnimData(0, animTime, walkTransforms);
+		program.sendUniform("bones", &walkTransforms[0], walkTransforms.size());
+	}
+	else if (catSwatting)
+	{
+		swattingAnimTime += deltaTime;
+		cat.getAnimData(1, swattingAnimTime, swatTransforms);
+		// Resets the animation - With help from Niam Wong!! he's a legend 
+		if (swattingAnimTime * cat.getAnimation(1)->getTicksPerSecond() >= cat.getAnimation(1)->getDuration())
+		{
+			catSwatting = false;
+			swattingAnimTime = 0;
+		}
+		program.sendUniform("bones", &swatTransforms[0], swatTransforms.size());
 	}
 	else
 	{
-		animTime = 0;
+		if(animTime>0) animTime=0.5;
+		cat.getAnimData(0, animTime, walkTransforms);
+		program.sendUniform("bones", &walkTransforms[0], walkTransforms.size());
 	}
 	// setup material - pink
 	program.sendUniform("materialDiffuse", vec3(1.f, 1.f, 1.f));
 
-	std::vector<mat4> walkTransforms;
-	std::vector<mat4> jumpTransforms;
-	cat.getAnimData(0, animTime, walkTransforms);
-	cat.getAnimData(1, animTime, jumpTransforms);
-	program.sendUniform("bones", &walkTransforms[0], walkTransforms.size());
-	program.sendUniform("bones", &jumpTransforms[0], jumpTransforms.size());
+
 
 	// get current camera rotation
 	float yaw = getYaw(matrixView);
 
 	m = matrixView;
-	m = translate(m, vec3(pos.x,0.6f, pos.z));
-	m = rotate(m, yaw+radians(90.f), vec3(0, 1, 0));
+	if (catCamOn)
+	{
+		currentCatPos = vec3(pos.x, 0.6f, pos.z);
+		currentCatRot = yaw + radians(90.f);
+	}
+	m = translate(m, currentCatPos);
+	m = rotate(m, currentCatRot, vec3(0, 1, 0));
 	m = rotate(m, radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
 	m = scale(m, vec3(0.00005f));
 	cat.render(m);
@@ -867,17 +922,12 @@ void onKeyDown(unsigned char key, int x, int y)
 {
 	switch (tolower(key))
 	{
-	case 'w':
-	{
-		_acc.z = accel; 
-		catMoving = true;
-		break;
-	}
-	case 's': _acc.z = -accel; break;
-	case 'a': _acc.x = accel; break;
-	case 'd': _acc.x = -accel; break;
-	case 'e': _acc.y = accel; break;
-	case 'q': _acc.y = -accel; break;
+	case 'w': _acc.z = accel; catMoving = true; break;
+	case 's': _acc.z = -accel; catMoving = true; break;
+	case 'a': _acc.x = accel; catMoving = true; break;
+	case 'd': _acc.x = -accel; catMoving = true; break;
+	//case 'e': _acc.y = accel; break;
+	//case 'q': _acc.y = -accel; break;
 	case '1': bulbOff1 = !bulbOff1; break;
 	case '2': bulbOff2 = !bulbOff2; break;
 	case '3':
@@ -886,6 +936,8 @@ void onKeyDown(unsigned char key, int x, int y)
 		programEffect.sendUniform("toonLinesToggle", toonLinesOn);
 		break;
 	}
+	case '4': catCamOn = !catCamOn; break;
+	case 'f': catSwatting = true; break;
 	}
 }
 
@@ -894,15 +946,13 @@ void onKeyUp(unsigned char key, int x, int y)
 {
 	switch (tolower(key))
 	{
-	case 'w':
-	{
-		catMoving = false;
-	}
-	case 's': _acc.z = _vel.z = 0; break;
-	case 'a':
-	case 'd': _acc.x = _vel.x = 0; break;
-	case 'q':
-	case 'e': _acc.y = _vel.y = 0; break;
+	case 'w': 
+	case 's': catMoving = false; _acc.z = _vel.z = 0; break;
+	case 'a': 
+	case 'd': catMoving = false; _acc.x = _vel.x = 0; break;
+	//case 'q':
+	//case 'e': _acc.y = _vel.y = 0; break;
+	case 'f': catSwatting = false; swattingAnimTime = 0; break;
 	
 	}
 }
