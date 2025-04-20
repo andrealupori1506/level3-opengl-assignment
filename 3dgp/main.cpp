@@ -46,6 +46,7 @@ C3dglModel cat, wallSegment, floorTile, table, teapot, vase, mug, lamp, ceilingL
 C3dglModel walk, jump, swat;
 float animTime;
 bool catMoving;
+mat4 catMatrix;
 
 // Textures
 // null texture
@@ -425,7 +426,7 @@ bool init()
 	// Initialise the View Matrix (initial position of the camera) --------------------------------------------
 	matrixView = rotate(mat4(1), radians(12.f), vec3(1, 0, 0));
 	matrixView *= lookAt(
-		vec3(-10.0, 3.0, 0.0),
+		vec3(-10.0, 2.65, 0.0),
 		vec3(0.0, 1.0, 10.0),
 		vec3(0.0, 1.0, 0.0));
 
@@ -738,12 +739,15 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	cat.getAnimData(0, animTime, walkTransforms);
 	program.sendUniform("bones", &walkTransforms[0], walkTransforms.size());
 
+	// cat target pos
+	float yaw = getYaw(matrixView);
 
 	m = matrixView;
-	m = translate(m, vec3(1.5f+pos.x, 0.6f, 1.5f + pos.z));
-	//m = translate(m, vec3(1, 0.6f, 1));
+	m = translate(m, vec3(pos.x,0.6f, pos.z));
+	m = rotate(m, yaw+radians(90.f), vec3(0, 1, 0));
 	m = rotate(m, radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
-	m = scale(m, vec3(0.00005f, 0.00005f, 0.00005f));
+	//m = rotate(m, desiredAngle, vec3(0, 0, 1));
+	m = scale(m, vec3(0.00005f));
 	cat.render(m);
 
 
@@ -799,6 +803,7 @@ void onRender()
 		_vel * deltaTime),		// animate camera motion (controlled by WASD keys)
 		-pitch, vec3(1, 0, 0))	// switch the pitch on
 		* matrixView;
+
 
 	// setup View Matrix
 	program.sendUniform("matrixView", matrixView);
