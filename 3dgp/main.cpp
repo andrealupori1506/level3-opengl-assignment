@@ -199,7 +199,7 @@ bool init()
 
 	if (!cat.load("models\\Animated Model\\CatModel.fbx")) return false;
 	cat.loadAnimations(&walk);
-	//cat.loadAnimations(&jump);
+	cat.loadAnimations(&jump);
 	//cat.loadAnimations(&swat);
 	// Load Textures ----------------------------------------------------------------------------------------------------------------------------------
 	// Base maps
@@ -736,17 +736,19 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	program.sendUniform("materialDiffuse", vec3(1.f, 1.f, 1.f));
 
 	std::vector<mat4> walkTransforms;
+	std::vector<mat4> jumpTransforms;
 	cat.getAnimData(0, animTime, walkTransforms);
+	cat.getAnimData(1, animTime, jumpTransforms);
 	program.sendUniform("bones", &walkTransforms[0], walkTransforms.size());
+	program.sendUniform("bones", &jumpTransforms[0], jumpTransforms.size());
 
-	// cat target pos
+	// get current camera rotation
 	float yaw = getYaw(matrixView);
 
 	m = matrixView;
 	m = translate(m, vec3(pos.x,0.6f, pos.z));
 	m = rotate(m, yaw+radians(90.f), vec3(0, 1, 0));
 	m = rotate(m, radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
-	//m = rotate(m, desiredAngle, vec3(0, 0, 1));
 	m = scale(m, vec3(0.00005f));
 	cat.render(m);
 

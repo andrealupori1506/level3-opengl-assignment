@@ -85,6 +85,15 @@ unsigned C3dglModel::loadAnimations()
 unsigned C3dglModel::loadAnimations(C3dglModel* pCompatibleModel)
 {
 	m_globInvT = glm::inverse(glm::transpose(glm::make_mat4((float*)&m_pScene->mRootNode->mTransformation)));
+	/*m_globInvT = glm::inverse(glm::transpose(glm::make_mat4((float*)&m_pScene->mRootNode->mTransformation)));
+
+	if (pCompatibleModel == NULL)
+		pCompatibleModel = this;
+	for (C3dglAnimation& animation : m_animations)
+		animation.create(*ppAnimation++, getScene()->mRootNode);
+
+	return pScene->mNumAnimations;*/
+	m_globInvT = glm::inverse(glm::transpose(glm::make_mat4((float*)&m_pScene->mRootNode->mTransformation)));
 
 	if (pCompatibleModel == NULL)
 		pCompatibleModel = this;
@@ -98,11 +107,12 @@ unsigned C3dglModel::loadAnimations(C3dglModel* pCompatibleModel)
 		return 0;
 	}
 
-	m_animations.resize(pScene->mNumAnimations, C3dglAnimation(this));
+	size_t n = m_animations.size();
+	m_animations.resize(n + pScene->mNumAnimations, C3dglAnimation(this));
 	aiAnimation** ppAnimation = pScene->mAnimations;
-	for (C3dglAnimation& animation : m_animations)
-		animation.create(*ppAnimation++, getScene()->mRootNode);
-	
+	for (auto i = m_animations.begin() + n; i < m_animations.end(); i++)
+		(*i).create(*ppAnimation++, getScene()->mRootNode);
+
 	return pScene->mNumAnimations;
 }
 
