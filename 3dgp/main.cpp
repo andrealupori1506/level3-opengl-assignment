@@ -44,6 +44,8 @@ unsigned indices[] = {
 C3dglModel cat, wallSegment, floorTile, table, teapot, vase, mug, lamp, ceilingLamp;
 // skinless animations
 C3dglModel walk, jump, swat;
+float animTime;
+bool catMoving;
 
 // Textures
 // null texture
@@ -721,11 +723,19 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	// Cat Animation set up
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, idTexCat);
+	if (catMoving)
+	{
+		animTime = time;
+	}
+	else
+	{
+		animTime = 0;
+	}
 	// setup material - pink
 	program.sendUniform("materialDiffuse", vec3(1.f, 1.f, 1.f));
 
 	std::vector<mat4> walkTransforms;
-	cat.getAnimData(0, time, walkTransforms);
+	cat.getAnimData(0, animTime, walkTransforms);
 	program.sendUniform("bones", &walkTransforms[0], walkTransforms.size());
 
 
@@ -850,7 +860,12 @@ void onKeyDown(unsigned char key, int x, int y)
 {
 	switch (tolower(key))
 	{
-	case 'w': _acc.z = accel; break;
+	case 'w':
+	{
+		_acc.z = accel; 
+		catMoving = true;
+		break;
+	}
 	case 's': _acc.z = -accel; break;
 	case 'a': _acc.x = accel; break;
 	case 'd': _acc.x = -accel; break;
@@ -873,6 +888,9 @@ void onKeyUp(unsigned char key, int x, int y)
 	switch (tolower(key))
 	{
 	case 'w':
+	{
+		catMoving = false;
+	}
 	case 's': _acc.z = _vel.z = 0; break;
 	case 'a':
 	case 'd': _acc.x = _vel.x = 0; break;
