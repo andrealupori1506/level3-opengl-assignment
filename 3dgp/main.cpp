@@ -515,7 +515,8 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 		}
 	}
 
-	// floor tiles ------------------------------------------------------------------------------------------------
+	// floor tiles ------------------------------------------------------------------------------------------------entire
+
 	for (int floorOrCeiling = 0; floorOrCeiling < 2; floorOrCeiling++) // make a floor and ceiling
 	{
 		float y;
@@ -534,8 +535,9 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 		}
 	}
 
+	// kitchen set
 	m = matrixView;
-	m = translate(m, vec3(5, 0.6f, 0.0f));
+	m = translate(m, vec3(-6.75, 0.6f, -8.0f));
 	m = scale(m, vec3(0.02f));
 	entireKitchenSet.render(m);
 
