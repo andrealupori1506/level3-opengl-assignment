@@ -41,7 +41,7 @@ unsigned indices[] = {
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 13, 14, 15 };
 
 // 3D models
-C3dglModel cat, wallSegment, wallWindow, floorTile, table, teapot, vase, mug, lamp, ceilingLamp;
+C3dglModel cat, wallSegment, wallWindow, floorTile, table, teapot, vase, mug, lamp, ceilingLamp, entireKitchenSet;
 // skinless animations
 C3dglModel walk, swat;
 float animTime, swattingAnimTime, currentCatRot;
@@ -75,14 +75,16 @@ const int NPARTICLES = (int)(LIFETIME / PERIOD);
 
 // bulb variables
 // bulb locations
-vec3 bulbLoc1 = vec3(-3.66f, 5.55f, -0.45f);
-
+vec3 bulbLoc1 = vec3(-12.0f + (2 * 12), 5, -11.6f);
 vec3 bulbLoc2 = vec3(3.055f, 5.55f, 0.052f);
+vec3 bulbLoc3 = vec3(-18.8f, 5, 15);
+vec3 bulbLoc4 = vec3(12.0f, 5, 38);
+vec3 bulbLoc5 = vec3(38.0f, 5, 15);
 
 // bulb lights
-bool bulbOff1 = true;
+bool bulbOff1 = false;
 bool bulbOff2 = true;
-vec3 bulbOnV = vec3(0.3, 0.3, 0.3);
+vec3 bulbOnV = vec3(0.0001, 0.0001, 0.0001);
 vec3 bulbOffV = vec3(0, 0, 0);
 
 // spot light position
@@ -193,6 +195,7 @@ bool init()
 	if (!wallSegment.load("models\\wall_tiles_kitchen_straight.obj")) return false;
 	if (!wallWindow.load("models\\wall_tiles_kitchen_window.obj")) return false;
 	if (!ceilingLamp.load("models\\ceilinglamp.3ds")) return false;
+	if (!entireKitchenSet.load("models\\test.fbx")) return false;
 
 	// cat model and animations
 	walk.load("models\\Animated Model\\Cat_Original_walk_cycle.fbx");
@@ -312,6 +315,9 @@ bool init()
 	// point lightS
 	program.sendUniform("lightPoint1.position", bulbLoc1);
 	program.sendUniform("lightPoint2.position", bulbLoc2);
+	program.sendUniform("lightPoint3.position", bulbLoc3);
+	program.sendUniform("lightPoint4.position", bulbLoc4);
+	program.sendUniform("lightPoint5.position", bulbLoc5);
 
 	// spot light
 	program.sendUniform("spotLight.position", spotLightLoc);
@@ -442,6 +448,8 @@ bool init()
 	cout << "  QE or PgUp/Dn to move the camera up and down" << endl;
 	cout << "  Shift to speed up your movement" << endl;
 	cout << "  Drag the mouse to look around" << endl;
+	cout << "  1 to toggle day and night lighting" << endl;
+	cout << "  2 to toggle table lamp" << endl;
 	cout << "  3 to toggle cartoon shader" << endl;
 	cout << "  4 to toggle cat cam" << endl;
 	cout << endl;
@@ -526,6 +534,11 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 		}
 	}
 
+	m = matrixView;
+	m = translate(m, vec3(5, 0.6f, 0.0f));
+	m = scale(m, vec3(0.02f));
+	entireKitchenSet.render(m);
+
 	// table --------------------------------------------------------------------------------------------------------
 	// texture
 	glActiveTexture(GL_TEXTURE0);
@@ -591,15 +604,6 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 
 	
 	// the lamp holder 1 ---------------------------------------------------------------------------
-	// setup material - red
-	program.sendUniform("materialDiffuse", vec3(0.3, 0.0, 0.0));
-	m = matrixView;
-	m = translate(m, vec3(-2.7f, 3.8f, -1.0f));
-	m = rotate(m, radians(30.f), vec3(0.0f, 1.0f, 0.0f));
-	m = scale(m, vec3(0.03f, 0.03f, 0.03f));
-	program.sendUniform("matrixModelView", m);
-	lamp.render(m);
-	// lamp holder 2
 	// setup material - green
 	program.sendUniform("materialDiffuse", vec3(0.0, 0.36222, 0.194117));
 	m = matrixView;
@@ -609,44 +613,47 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	program.sendUniform("matrixModelView", m);
 	lamp.render(m);
 
-	program.sendUniform("materialAmbient", vec3(0.3, 0.3, 0.3));
+	program.sendUniform("materialAmbient", vec3(0.0, 0.0, 0.6));
 	if (bulbOff1)
 	{
 		program.sendUniform("lightPoint1.diffuse", bulbOffV);
 		program.sendUniform("lightPoint1.specular", bulbOffV);
+		program.sendUniform("lightPoint3.diffuse", bulbOffV);
+		program.sendUniform("lightPoint3.specular", bulbOffV);
+		program.sendUniform("lightPoint4.diffuse", bulbOffV);
+		program.sendUniform("lightPoint4.specular", bulbOffV);
+		program.sendUniform("lightPoint5.diffuse", bulbOffV);
+		program.sendUniform("lightPoint5.specular", bulbOffV);
 	}
 	else
 	{
 		// set bulb to emit as much light as possible with the ambient colour
 		program.sendUniform("lightAmbient.color", vec3(1, 1, 1));
-		program.sendUniform("materialAmbient", vec3(0.9, 0.9, 0.9));
+		program.sendUniform("materialAmbient", vec3(0.0784, 0.3411, 0.9804));
 		program.sendUniform("lightPoint1.diffuse", bulbOnV);
 		program.sendUniform("lightPoint1.specular", bulbOnV);
+		program.sendUniform("lightPoint3.diffuse", bulbOnV);
+		program.sendUniform("lightPoint3.specular", bulbOnV);
+		program.sendUniform("lightPoint4.diffuse", bulbOnV);
+		program.sendUniform("lightPoint4.specular", bulbOnV);
+		program.sendUniform("lightPoint5.diffuse", bulbOnV);
+		program.sendUniform("lightPoint5.specular", bulbOnV);
 	}
 
-
-	program.sendUniform("materialDiffuse", vec3(0.6, 0.6, 0.6));
-	m = matrixView;
-	m = translate(m, bulbLoc1);
-	m = scale(m, vec3(0.15f, 0.15f, 0.15f));
-	program.sendUniform("matrixModelView", m);
-	glutSolidSphere(1, 32, 32);
+	program.sendUniform("materialDiffuse", vec3(0.000005, 0.0005, 0.1));			// blue
 	for (int i = 0; i < 4; i++)
 	{
 		m = matrixView;
-		if (i==0) m = translate(m, vec3(-12.0f + (2 * 12), 5, -11.6f));
-		if (i==1) m = translate(m, vec3(-18.8f , 5, 15)); //xTranslation = -14.0f; zTranslation = -8.0f + (2 * j);
-		if (i==2) m = translate(m, vec3(12.0f, 5, 38)); //{ xTranslation = -14.0f + (2 * i); zTranslation = 30; }
-		if (i==3) m = translate(m, vec3(38.0f, 5, 15)); //{ xTranslation = 30.0f; zTranslation = -8.0f + (2 * j); }
+		if (i==0) m = translate(m, bulbLoc1);								// south
+		if (i==1) m = translate(m, bulbLoc3);								// east
+		if (i==2) m = translate(m, bulbLoc4);						// north
+		if (i==3) m = translate(m, bulbLoc5);						// west
 		program.sendUniform("matrixModelView", m);
 		glutSolidCube(4);
 	}
 	
 	program.sendUniform("lightAmbient.color", vec3(0.1, 0.1, 0.1));
 	program.sendUniform("materialAmbient", vec3(0.3, 0.3, 0.3));
-
-	
-
 
 	if (bulbOff2)
 	{

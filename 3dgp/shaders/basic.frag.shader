@@ -55,7 +55,7 @@ struct POINT
 	vec3 diffuse;
 	vec3 specular;
 };
-uniform POINT lightPoint1, lightPoint2;
+uniform POINT lightPoint1, lightPoint2, lightPoint3, lightPoint4, lightPoint5;
 
 vec4 PointLight(POINT light)
 {
@@ -69,7 +69,7 @@ vec4 PointLight(POINT light)
     vec3 R = reflect(-L, newNormal); // reflection vector
 	float RdotV = dot(R,V);					// dot product - measures intensity.
 	color += vec4(materialSpecular * light.specular * pow(max(RdotV, 0), shininess), 1);
-    color = ceil(color*toon_color_levels)*toon_scale_factor;
+    color = ceil(color*16)*0.0625f;
 	return color;
 }
 
@@ -139,7 +139,10 @@ void main(void)
 	outColor = ceil(color*toon_color_levels)*toon_scale_factor;
     outColor += DirectionalLight(lightDir);
 	outColor += PointLight(lightPoint1);
-	outColor += PointLight(lightPoint2);
+    outColor += PointLight(lightPoint2);
+	outColor += PointLight(lightPoint3);
+    outColor += PointLight(lightPoint4);
+    outColor += PointLight(lightPoint5);
     outColor += SpotLight(spotLight);
 	
 	// base map
