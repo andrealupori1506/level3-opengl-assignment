@@ -21,11 +21,15 @@ out float age; // age of the particle (0..1)
 in vec2 aTexCoord;
 out vec2 texCoord0;
 
+out vec3 particlePos;
+
 void main()
 {
     float t = mod(time - aStartTime, particleLifetime);
     vec3 pos = initialPos + aVelocity * t + gravity * t * t;
     age = t / particleLifetime;
+
+    particlePos = pos;
     
     // pass through texture co-ordinates for the fragment shader
     texCoord0 = aTexCoord;

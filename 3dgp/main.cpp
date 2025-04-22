@@ -348,7 +348,7 @@ bool init()
 
 	programParticle.sendUniform("texture0", 0);
 
-	programParticle.sendUniform("initialPos", vec3(1.3, 4.4f, 0.4f));
+	programParticle.sendUniform("initialPos", vec3(-13.73, 3.45f, 5.86f));
 	programParticle.sendUniform("gravity", vec3(0.0, 1, 0.0));
 	programParticle.sendUniform("particleLifetime", LIFETIME);
 
@@ -819,6 +819,7 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 
 	// RENDER THE PARTICLE SYSTEM
 	programParticle.use();
+	programParticle.sendUniform("camPos", pos);
 
 	glDepthMask(GL_FALSE);
 	glActiveTexture(GL_TEXTURE0);
@@ -844,6 +845,9 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	glDepthMask(GL_TRUE);
 	program.use();
 
+	// bottom left text camera pos and pitch
+	print(0, 0, std::format("Camera position: ({:.2f}, {:.2f}, {:.2f})", getPos(matrixView).x, getPos(matrixView).y, getPos(matrixView).z));
+	print(0, 20, std::format("Camera Pitch: ({:.2f}), Yaw: ({:.2f}), Roll ({:.2f})", degrees(getPitch(matrixView)), degrees(getYaw(matrixView)), degrees(getRoll(matrixView))));
 
 }
 
