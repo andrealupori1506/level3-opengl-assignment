@@ -76,7 +76,7 @@ const int NPARTICLES = (int)(LIFETIME / PERIOD);
 // bulb variables
 // bulb locations
 vec3 bulbLoc1 = vec3(-12.0f + (2 * 12), 5, -11.6f);
-vec3 bulbLoc2 = vec3(3.055f, 5.55f, 0.052f);
+vec3 bulbLoc2 = vec3(14.35f, 4.8f, 26.f);
 vec3 bulbLoc3 = vec3(-18.8f, 5, 15);
 vec3 bulbLoc4 = vec3(12.0f, 5, 38);
 vec3 bulbLoc5 = vec3(38.0f, 5, 15);
@@ -673,7 +673,7 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 
 	m = matrixView;
 	m = translate(m, bulbLoc2);
-	m = scale(m, vec3(0.15f, 0.15f, 0.15f));
+	m = scale(m, vec3(0.3f));
 	program.sendUniform("matrixModelView", m);
 	glutSolidSphere(1, 32, 32);
 	program.sendUniform("lightAmbient.color", vec3(0.1, 0.1, 0.1));
