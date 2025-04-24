@@ -55,7 +55,7 @@ struct POINT
 	vec3 diffuse;
 	vec3 specular;
 };
-uniform POINT lightPoint1, lightPoint2, lightPoint3, lightPoint4, lightPoint5;
+uniform POINT lightPoint1, lightPoint2, lightPoint3, lightPoint4, lightPoint5, lightPoint6;
 
 vec4 PointLight(POINT light)
 {
@@ -143,6 +143,7 @@ void main(void)
 	outColor += PointLight(lightPoint3);
     outColor += PointLight(lightPoint4);
     outColor += PointLight(lightPoint5);
+    outColor += PointLight(lightPoint6);
     outColor += SpotLight(spotLight);
 	
 	// base map

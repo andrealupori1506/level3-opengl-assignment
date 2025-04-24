@@ -41,7 +41,7 @@ unsigned indices[] = {
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 13, 14, 15 };
 
 // 3D models
-C3dglModel cat, wallSegment, wallWindow, floorTile, table, teapot, vase, mug, lamp, ceilingLamp, entireKitchenSet;
+C3dglModel cat, wallSegment, wallWindow, floorTile, ceilingLamp, entireKitchenSet;
 // skinless animations
 C3dglModel walk, swat;
 float animTime, swattingAnimTime, currentCatRot;
@@ -80,6 +80,7 @@ vec3 bulbLoc2 = vec3(14.35f, 4.8f, 26.f);
 vec3 bulbLoc3 = vec3(-18.8f, 5, 15);
 vec3 bulbLoc4 = vec3(12.0f, 5, 38);
 vec3 bulbLoc5 = vec3(38.0f, 5, 15);
+vec3 bulbLoc6 = vec3(22.78f, 5, 37.65);
 
 // bulb lights
 bool bulbOff1 = false;
@@ -186,11 +187,6 @@ bool init()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// Load 3D models 
-	if (!table.load("models\\table.obj")) return false;
-	if (!teapot.load("models\\utah_teapot_hires.obj")) return false;
-	if (!vase.load("models\\vase.obj")) return false;
-	if (!mug.load("models\\mug.obj")) return false;
-	if (!lamp.load("models\\lamp.obj")) return false;
 	if (!floorTile.load("models\\floor_tiles_kitchen.obj")) return false;
 	if (!wallSegment.load("models\\wall_tiles_kitchen_straight.obj")) return false;
 	if (!wallWindow.load("models\\wall_tiles_kitchen_window.obj")) return false;
@@ -229,78 +225,17 @@ bool init()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, wallTexture.getWidth(), wallTexture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, wallTexture.getBits());
 
-	// table texure
-	C3dglBitmap tableTexture;
-	tableTexture.load("models/textures/oak.bmp", GL_RGBA);
-	if (!tableTexture.getBits()) return false;
-	glActiveTexture(GL_TEXTURE0);
-	glGenTextures(1, &idTexTable);
-	glBindTexture(GL_TEXTURE_2D, idTexTable);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tableTexture.getWidth(), tableTexture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, tableTexture.getBits());
-
-	// chair texure
-	C3dglBitmap chairTexture;
-	chairTexture.load("models/textures/Metal_Steel_Brushed_001_diffuse.jpg", GL_RGBA);
-	if (!chairTexture.getBits()) return false;
-	glActiveTexture(GL_TEXTURE0);
-	glGenTextures(1, &idTexChair);
-	glBindTexture(GL_TEXTURE_2D, idTexChair);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, chairTexture.getWidth(), chairTexture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, chairTexture.getBits());
-
-	// teapot texure
-	C3dglBitmap teapotTexture;
-	teapotTexture.load("models/textures/Glass_Pattern_002_basecolor.jpg", GL_RGBA);
-	if (!teapotTexture.getBits()) return false;
-	glActiveTexture(GL_TEXTURE0);
-	glGenTextures(1, &idTexTeapot);
-	glBindTexture(GL_TEXTURE_2D, idTexTeapot);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, teapotTexture.getWidth(), teapotTexture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, teapotTexture.getBits());
-
 	// NULL texture - to counter the previous textures
 	glGenTextures(1, &idTexNone);
 	glBindTexture(GL_TEXTURE_2D, idTexNone);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	BYTE bytes[] = { 255, 255, 255 };
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_BGR, GL_UNSIGNED_BYTE, &bytes);
-	
 
-	// NORMAL maps -------------------------------------------------------------------------------------
-	// table normal texture
-	C3dglBitmap tableNormal;
-	tableNormal.load("models/textures/normal1.jpg", GL_RGBA);
-	if (!tableNormal.getBits()) return false;
-	glActiveTexture(GL_TEXTURE1);
-	glGenTextures(1, &idTexTableNormal);
-	glBindTexture(GL_TEXTURE_2D, idTexTableNormal);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tableNormal.getWidth(), tableNormal.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, tableNormal.getBits());
-
-	// chair normal texture
-	C3dglBitmap chairNormal;
-	chairNormal.load("models/textures/Metal_Steel_Brushed_001_normal.jpg", GL_RGBA);
-	if (!chairNormal.getBits()) return false;
-	glActiveTexture(GL_TEXTURE1);
-	glGenTextures(1, &idTexChairNormal);
-	glBindTexture(GL_TEXTURE_2D, idTexChairNormal);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, chairNormal.getWidth(), chairNormal.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, chairNormal.getBits());
-
-	// teapot normal texture
-	C3dglBitmap teapotNormal;
-	teapotNormal.load("models/textures/Glass_Pattern_002_normal.jpg", GL_RGBA);
-	if (!teapotNormal.getBits()) return false;
-	glActiveTexture(GL_TEXTURE1);
-	glGenTextures(1, &idTexTeapotNormal);
-	glBindTexture(GL_TEXTURE_2D, idTexTeapotNormal);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, teapotNormal.getWidth(), teapotNormal.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, teapotNormal.getBits());
 
 	// Send the texture info to the shaders
 	program.sendUniform("texture0", 0);
-	program.sendUniform("textureNormal", 1);
+	//program.sendUniform("textureNormal", 1);
 	programEffect.sendUniform("texture0", 0);
 
 	// SET UP LIGHTS HERE --------------------------------------------------------------------------------------------------------------------------------
@@ -318,14 +253,12 @@ bool init()
 	program.sendUniform("lightPoint3.position", bulbLoc3);
 	program.sendUniform("lightPoint4.position", bulbLoc4);
 	program.sendUniform("lightPoint5.position", bulbLoc5);
+	program.sendUniform("lightPoint5.position", bulbLoc6);
 
 	// spot light
 	program.sendUniform("spotLight.position", spotLightLoc);
 	program.sendUniform("spotLight.diffuse", vec3(1,1,1));
 	program.sendUniform("spotLight.specular", vec3(0.5, 0.5, 0.5));
-
-	//program.sendUniform("spotLight.diffuse", vec3(0, 0, 0));
-	//program.sendUniform("spotLight.specular", vec3(0, 0, 0));
 
 	program.sendUniform("spotLight.direction", vec3(0, -1, 0));
 	program.sendUniform("spotLight.cutoff", radians(45.f));
@@ -434,8 +367,8 @@ bool init()
 	// Initialise the View Matrix (initial position of the camera) --------------------------------------------
 	matrixView = rotate(mat4(1), radians(12.f), vec3(1, 0, 0));
 	matrixView *= lookAt(
-		vec3(-10.0, 2.65, 0.0),
-		vec3(0.0, 1.0, 10.0),
+		vec3(0.71, 2.65, -0.36),
+		vec3(2.0, 1.0, 14.0),
 		vec3(0.0, 1.0, 0.0));
 
 	// setup the screen background colour
@@ -541,79 +474,14 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	m = scale(m, vec3(0.02f));
 	entireKitchenSet.render(m);
 
-	// table --------------------------------------------------------------------------------------------------------
-	// texture
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, idTexTable);
-	glActiveTexture(GL_TEXTURE1);
-	program.sendUniform("useNormalMap", true);
-	glBindTexture(GL_TEXTURE_2D, idTexTableNormal);
-
-	program.sendUniform("materialSpecular", vec3(0.9, 0.9, 0.9));
-
-	m = matrixView;
-	m = scale(m, vec3(0.005f, 0.005f, 0.005f));
-	program.sendUniform("matrixModelView", m);
-	table.render(1, m); // renders table
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, idTexChair);
-	glActiveTexture(GL_TEXTURE1);
-	program.sendUniform("useNormalMap", true);
-	glBindTexture(GL_TEXTURE_2D, idTexChairNormal);
-
-	program.sendUniform("materialAmbient", ambientRoomLight);
-	program.sendUniform("materialDiffuse", vec3(0.5, 0.5, 0.6));
-	
-
-	for (int i = 0; i < 4; i++)
-	{
-		m = rotate(m, radians(90.f * i), vec3(0.0f, 1.0f, 0.0f));
-		program.sendUniform("matrixModelView", m);
-		table.render(0, m); // renders chairs
-	}
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, idTexTeapot);
-	glActiveTexture(GL_TEXTURE1);
-	program.sendUniform("useNormalMap", true);
-	glBindTexture(GL_TEXTURE_2D, idTexTeapotNormal);
-
-	// teapot
-	m = matrixView;
-	m = translate(m, vec3(2, 3.75f, 0.0f));
-	m = rotate(m, radians(120.f), vec3(0.0f, 1.0f, 0.0f));
-	m = scale(m, vec3(0.6f, 0.6f, 0.6f));
-	program.sendUniform("matrixModelView", m);
-	teapot.render(m);
-
+	// window lights --------------------------------------------------------------------------------------------------------
 	program.sendUniform("useNormalMap", false);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, idTexNone);
 
 	// setup material - blue
 	program.sendUniform("materialAmbient", ambientRoomMaterial);
-	program.sendUniform("materialDiffuse", vec3(0.0784, 0.5411, 0.9804));
 	program.sendUniform("shininess", 8.0);
-
-	// vase
-	m = matrixView;
-	m = translate(m, vec3(0, 3.8f, 0.0f));
-	m = rotate(m, radians(120.f), vec3(0.0f, 1.0f, 0.0f));
-	m = scale(m, vec3(0.1f, 0.1f, 0.1f));
-	program.sendUniform("matrixModelView", m);
-	vase.render(m);
-
-	
-	// the lamp holder 1 ---------------------------------------------------------------------------
-	// setup material - green
-	program.sendUniform("materialDiffuse", vec3(0.0, 0.36222, 0.194117));
-	m = matrixView;
-	m = translate(m, vec3(2.5f, 3.8f, 1.0f));
-	m = rotate(m, radians(240.f), vec3(0.0f, 1.0f, 0.0f));
-	m = scale(m, vec3(0.03f, 0.03f, 0.03f));
-	program.sendUniform("matrixModelView", m);
-	lamp.render(m);
 
 	program.sendUniform("materialAmbient", vec3(0.0, 0.0, 0.6));
 	if (bulbOff1)
@@ -626,6 +494,8 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 		program.sendUniform("lightPoint4.specular", bulbOffV);
 		program.sendUniform("lightPoint5.diffuse", bulbOffV);
 		program.sendUniform("lightPoint5.specular", bulbOffV);
+		program.sendUniform("lightPoint6.diffuse", bulbOffV);
+		program.sendUniform("lightPoint6.specular", bulbOffV);
 	}
 	else
 	{
@@ -640,19 +510,24 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 		program.sendUniform("lightPoint4.specular", bulbOnV);
 		program.sendUniform("lightPoint5.diffuse", bulbOnV);
 		program.sendUniform("lightPoint5.specular", bulbOnV);
+		program.sendUniform("lightPoint6.diffuse", bulbOnV);
+		program.sendUniform("lightPoint6.specular", bulbOnV);
 	}
 
 	program.sendUniform("materialDiffuse", vec3(0.000005, 0.0005, 0.1));			// blue
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		m = matrixView;
 		if (i==0) m = translate(m, bulbLoc1);								// south
 		if (i==1) m = translate(m, bulbLoc3);								// east
 		if (i==2) m = translate(m, bulbLoc4);						// north
 		if (i==3) m = translate(m, bulbLoc5);						// west
+		if (i == 4) m = translate(m, bulbLoc6);						// bathroom
 		program.sendUniform("matrixModelView", m);
 		glutSolidCube(4);
 	}
+
+	// lamp lights
 	
 	program.sendUniform("lightAmbient.color", vec3(0.1, 0.1, 0.1));
 	program.sendUniform("materialAmbient", vec3(0.3, 0.3, 0.3));
@@ -713,59 +588,8 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	program.sendUniform("lightAmbient.color", ambientRoomLight);
 	program.sendUniform("materialAmbient", ambientRoomMaterial);
 
-	// ---------------------------------------------------------------------------------------
-
-	// get vertex and normal attribute location
-	GLuint attribVertex = program.getAttribLocation("aVertex");
-	GLuint attribNormal = program.getAttribLocation("aNormal");
-
-	// setup material - yellow
-	program.sendUniform("materialAmbient", ambientRoomMaterial);
-	program.sendUniform("materialDiffuse", vec3(0.937255f, 0.611765f, 0.05098f));
-
-	// triangle
-	// enable the vertex and normal attributes
-	glEnableVertexAttribArray(attribVertex);
-	glEnableVertexAttribArray(attribNormal);
-
-	// activate the vertex buffer and set the pointer to it
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	glVertexAttribPointer(attribVertex, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-	// activate the normal buffer and set the pointer to it
-	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
-	glVertexAttribPointer(attribNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-	// triangle animation
-	m = matrixView;
-	m = translate(m, vec3(-1.8, 4.5f, 1.0f));					// basic translation 
-	m = scale(m, vec3(0.1f, 0.1f, 0.1f));					// and scale
-	m = rotate(m, radians(180.f), vec3(0.0f, 0.0f, 1.0f));	// and rotation - upside down
-	float theta = 0.2f * time;
-	m = rotate(m, theta, vec3(0.0f, 1.0f, 0.0f));	// the rotation animation
-
-	program.sendUniform("matrixModelView", m);
-
-	// DRAW - using index buffer
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_INT, 0);
-
-	// disable the vertex and normal attributes
-	glDisableVertexAttribArray(attribVertex);
-	glDisableVertexAttribArray(attribNormal);
-
-	// setup material - pink
-	program.sendUniform("materialDiffuse", vec3(0.8745f, 0.2f, 0.6f));
-
-	// mug that sits on the triangle
-	m = matrixView;
-	m = translate(m, vec3(-1.8f, 4.5f, 1.0f));
-	m = rotate(m, -theta, vec3(0.0f, 1.0f, 0.0f));
-	m = scale(m, vec3(1.2f, 1.2f, 1.2f));
-	program.sendUniform("matrixModelView", m);
-	mug.render(m);
-
-	// Cat Animation set up
+	// Cat ---------------------------------------------------------------------------------------
+	// Animation set up
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, idTexCat);
 
@@ -796,7 +620,6 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 		cat.getAnimData(0, animTime, walkTransforms);
 		program.sendUniform("bones", &walkTransforms[0], walkTransforms.size());
 	}
-	// setup material - pink
 	program.sendUniform("materialDiffuse", vec3(1.f, 1.f, 1.f));
 
 
