@@ -41,7 +41,7 @@ unsigned indices[] = {
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 13, 14, 15 };
 
 // 3D models
-C3dglModel cat, wallSegment, wallWindow, floorTile, ceilingLamp, entireKitchenSet;
+C3dglModel cat, wallSegment, wallWindow, floorTile, ceilingLamp, entireKitchenSet, kaykitAssets, bedsheetPink, bedsheetBlue;
 // skinless animations
 C3dglModel walk, swat;
 float animTime, swattingAnimTime, currentCatRot;
@@ -53,7 +53,7 @@ vec3 currentCatPos;
 // null texture
 GLuint idTexNone;
 // base maps
-GLuint idTexCat, idTexWall, idTexTable, idTexChair, idTexTeapot, idTexSmokeParticle;
+GLuint idTexCat, idTexWall, idTexKayKit, idTexPinkSheet, idTexBlueSheet, idTexSmokeParticle;
 
 // normal maps
 GLuint idTexTableNormal, idTexChairNormal, idTexTeapotNormal;
@@ -92,7 +92,7 @@ vec3 bulbOffV = vec3(0, 0, 0);
 vec3 spotLightLoc = vec3(0.f, 12.f, 0.f);
 
 // ambient room light
-vec3 ambientRoomLight = vec3(0.15f, 0.01f, 0.15f);
+vec3 ambientRoomLight = vec3(0.2f, 0.06f, 0.2f);
 vec3 ambientRoomMaterial = vec3(0.0f, 0.0f, 0.0f);
 
 // Toon toogle
@@ -192,6 +192,9 @@ bool init()
 	if (!wallWindow.load("models\\wall_tiles_kitchen_window.obj")) return false;
 	if (!ceilingLamp.load("models\\ceilinglamp.3ds")) return false;
 	if (!entireKitchenSet.load("models\\test.fbx")) return false;
+	if (!bedsheetPink.load("models\\Bedroom\\bedsheetPink.fbx")) return false;
+	if (!bedsheetBlue.load("models\\Bedroom\\bedsheetBlue.fbx")) return false;
+	if(!kaykitAssets.load("models\\kayKitAssets.fbx")) return false;
 
 	// cat model and animations
 	walk.load("models\\Animated Model\\Cat_Original_walk_cycle.fbx");
@@ -215,7 +218,7 @@ bool init()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, catTexture.getWidth(), catTexture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, catTexture.getBits());
 
-	// wall AND floor texture
+	// main texture
 	C3dglBitmap wallTexture;
 	wallTexture.load("models/textures/tiny_treats_texture_1.png", GL_RGBA);
 	if (!wallTexture.getBits()) return false;
@@ -224,6 +227,36 @@ bool init()
 	glBindTexture(GL_TEXTURE_2D, idTexWall);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, wallTexture.getWidth(), wallTexture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, wallTexture.getBits());
+	
+	// kay kit texture
+	C3dglBitmap kayKitTexture;
+	kayKitTexture.load("models/textures/furniturebits_texture_alt_B.png", GL_RGBA);
+	if (!kayKitTexture.getBits()) return false;
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &idTexKayKit);
+	glBindTexture(GL_TEXTURE_2D, idTexKayKit);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kayKitTexture.getWidth(), kayKitTexture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, kayKitTexture.getBits());
+
+	// pink bedsheet texture
+	C3dglBitmap pinkSheetTexture;
+	pinkSheetTexture.load("models/Bedroom/tiny_treats_bedroom_pattern_pink.png", GL_RGBA);
+	if (!pinkSheetTexture.getBits()) return false;
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &idTexPinkSheet);
+	glBindTexture(GL_TEXTURE_2D, idTexPinkSheet);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pinkSheetTexture.getWidth(), pinkSheetTexture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, pinkSheetTexture.getBits());
+
+	// blue bedsheet texture
+	C3dglBitmap blueSheetTexture;
+	blueSheetTexture.load("models/Bedroom/tiny_treats_bedroom_pattern_blue.png", GL_RGBA);
+	if (!blueSheetTexture.getBits()) return false;
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &idTexBlueSheet);
+	glBindTexture(GL_TEXTURE_2D, idTexBlueSheet);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, blueSheetTexture.getWidth(), blueSheetTexture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, blueSheetTexture.getBits());
 
 	// NULL texture - to counter the previous textures
 	glGenTextures(1, &idTexNone);
@@ -244,7 +277,7 @@ bool init()
 
 	// directional light
 	program.sendUniform("lightDir.direction", vec3(1.0, 0.5, 0.5));
-	program.sendUniform("lightDir.diffuse", vec3(1, 1, 1));
+	program.sendUniform("lightDir.diffuse", vec3(0, 0, 0));
 	//program.sendUniform("lightDir.diffuse", vec3(0, 0, 0));
 
 	// point lightS
@@ -474,6 +507,25 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	m = scale(m, vec3(0.02f));
 	entireKitchenSet.render(m);
 
+	// kay kit assets
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, idTexKayKit);
+	kaykitAssets.render(m);
+
+	// bed sheets
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, idTexPinkSheet);
+		//pink
+	bedsheetPink.render(m);
+	m = matrixView;
+	m = translate(m, vec3(-6.75, 0.6f, -8.0f));
+	m = scale(m, vec3(0.02f));
+		//blue 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, idTexBlueSheet);
+	bedsheetBlue.render(m);
+
+
 	// window lights --------------------------------------------------------------------------------------------------------
 	program.sendUniform("useNormalMap", false);
 	glActiveTexture(GL_TEXTURE0);
@@ -483,7 +535,7 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	program.sendUniform("materialAmbient", ambientRoomMaterial);
 	program.sendUniform("shininess", 8.0);
 
-	program.sendUniform("materialAmbient", vec3(0.0, 0.0, 0.6));
+	program.sendUniform("materialAmbient", vec3(0.0, 0.0, 0.01));
 	if (bulbOff1)
 	{
 		program.sendUniform("lightPoint1.diffuse", bulbOffV);
@@ -622,8 +674,6 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	}
 	program.sendUniform("materialDiffuse", vec3(1.f, 1.f, 1.f));
 
-
-
 	// get current camera rotation
 	float yaw = getYaw(matrixView);
 
@@ -638,7 +688,6 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	m = rotate(m, radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
 	m = scale(m, vec3(0.00005f));
 	cat.render(m);
-
 
 	// RENDER THE PARTICLE SYSTEM
 	programParticle.use();
