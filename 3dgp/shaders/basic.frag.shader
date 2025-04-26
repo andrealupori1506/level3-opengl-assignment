@@ -85,14 +85,19 @@ struct SPOT
     float attenuation;          // how much the light is concentrated around the centre
     
     // animation
+    bool isAnimated;
     mat4 matrix;
+    
 };
 uniform SPOT spotLight, spotlampLight1,spotlampLight2,spotlampLight3;
 
 vec4 SpotLight(SPOT light)
 {
+    mat4 matrixToUse;
+    if(light.isAnimated) matrixToUse = light.matrix;
+    else matrixToUse = matrixView; 
     vec4 color = vec4(0, 0, 0, 0);
-    vec3 L = normalize(light.matrix * vec4(light.position, 1) - pos).xyz;
+    vec3 L = normalize(matrixToUse * vec4(light.position, 1) - pos).xyz;
     float NdotL = dot(newNormal, L);
     color += vec4(materialDiffuse * light.diffuse, 1) * max(NdotL, 0);
 
@@ -103,7 +108,7 @@ vec4 SpotLight(SPOT light)
     color += vec4(materialSpecular * light.specular * pow(max(RdotV, 0), shininess), 1);
 
     // Determine the spot factor
-    vec3 D = normalize(mat3(light.matrix) * light.direction);
+    vec3 D = normalize(mat3(matrixToUse) * light.direction);
     float spotFactor = dot(-L, D);
     float angle = acos(spotFactor);
     if (angle <= light.cutoff)

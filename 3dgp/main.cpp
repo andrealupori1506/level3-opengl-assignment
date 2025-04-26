@@ -297,22 +297,26 @@ bool init()
 	program.sendUniform("spotLight.direction", vec3(0, -1, 0));
 	program.sendUniform("spotLight.cutoff", radians(45.f));
 	program.sendUniform("spotLight.attenuation", 7.f);
+	program.sendUniform("spotLight.isAnimated", true);
 
 	// lamp spotlight
 	program.sendUniform("spotlampLight1.position", bulbLoc7);
 	program.sendUniform("spotlampLight1.direction", vec3(0, -1, 0));
 	program.sendUniform("spotlampLight1.cutoff", radians(30.f));
 	program.sendUniform("spotlampLight1.attenuation", 7.f);
+	program.sendUniform("spotlampLight1.isAnimated", false);
 
 	program.sendUniform("spotlampLight2.position", bulbLoc2);
 	program.sendUniform("spotlampLight2.direction", vec3(0, -1, 0));
 	program.sendUniform("spotlampLight2.cutoff", radians(30.f));
 	program.sendUniform("spotlampLight2.attenuation", 7.f);
+	program.sendUniform("spotlampLight2.isAnimated", false);
 
 	program.sendUniform("spotlampLight3.position", bulbLoc8);
 	program.sendUniform("spotlampLight3.direction", vec3(0, -1, 0));
 	program.sendUniform("spotlampLight3.cutoff", radians(30.f));
 	program.sendUniform("spotlampLight3.attenuation", 7.f);
+	program.sendUniform("spotlampLight3.isAnimated", false);
 
 	glutSetVertexAttribCoord3(program.getAttribLocation("aVertex"));
 	glutSetVertexAttribNormal(program.getAttribLocation("aNormal"));
@@ -625,21 +629,20 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	for (int i = 0; i < 3; i++)
 	{
 		m = matrixView;
-
 		if (i == 0)
 		{
-			program.sendUniform("spotlampLight1.matrix", m);
-			m = translate(m, bulbLoc7);								// south
+			//program.sendUniform("spotlampLight1.matrix", matrixView);
+			m = translate(m, bulbLoc7);								// living room
 		}
 		if (i == 1)
 		{
-			program.sendUniform("spotlampLight2.matrix", m);
-			m = translate(m, bulbLoc2);								// east
+			//program.sendUniform("spotlampLight2.matrix", m);
+			m = translate(m, bulbLoc2);								// middle
 		}
 		if (i == 2)
 		{
-			program.sendUniform("spotlampLight3.matrix", m);
-			m = translate(m, bulbLoc8);						// north
+			//program.sendUniform("spotlampLight3.matrix", m);
+			m = translate(m, bulbLoc8);						// bedroom
 		}
 		program.sendUniform("matrixModelView", m);
 		glutSolidSphere(0.32f, 32, 32);
