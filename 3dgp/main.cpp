@@ -81,6 +81,8 @@ vec3 bulbLoc3 = vec3(-18.8f, 5, 15);
 vec3 bulbLoc4 = vec3(12.0f, 5, 38);
 vec3 bulbLoc5 = vec3(38.0f, 5, 15);
 vec3 bulbLoc6 = vec3(22.78f, 5, 37.65);
+vec3 bulbLoc7 = vec3(-12.9f, 4.8f, 18.44);
+vec3 bulbLoc8 = vec3(34.39f, 4.8f, 5.83f);
 
 // bulb lights
 bool bulbOff1 = false;
@@ -282,7 +284,6 @@ bool init()
 
 	// point lightS
 	program.sendUniform("lightPoint1.position", bulbLoc1);
-	program.sendUniform("lightPoint2.position", bulbLoc2);
 	program.sendUniform("lightPoint3.position", bulbLoc3);
 	program.sendUniform("lightPoint4.position", bulbLoc4);
 	program.sendUniform("lightPoint5.position", bulbLoc5);
@@ -296,6 +297,22 @@ bool init()
 	program.sendUniform("spotLight.direction", vec3(0, -1, 0));
 	program.sendUniform("spotLight.cutoff", radians(45.f));
 	program.sendUniform("spotLight.attenuation", 7.f);
+
+	// lamp spotlight
+	program.sendUniform("spotlampLight1.position", bulbLoc7);
+	program.sendUniform("spotlampLight1.direction", vec3(0, -1, 0));
+	program.sendUniform("spotlampLight1.cutoff", radians(30.f));
+	program.sendUniform("spotlampLight1.attenuation", 7.f);
+
+	program.sendUniform("spotlampLight2.position", bulbLoc2);
+	program.sendUniform("spotlampLight2.direction", vec3(0, -1, 0));
+	program.sendUniform("spotlampLight2.cutoff", radians(30.f));
+	program.sendUniform("spotlampLight2.attenuation", 7.f);
+
+	program.sendUniform("spotlampLight3.position", bulbLoc8);
+	program.sendUniform("spotlampLight3.direction", vec3(0, -1, 0));
+	program.sendUniform("spotlampLight3.cutoff", radians(30.f));
+	program.sendUniform("spotlampLight3.attenuation", 7.f);
 
 	glutSetVertexAttribCoord3(program.getAttribLocation("aVertex"));
 	glutSetVertexAttribNormal(program.getAttribLocation("aNormal"));
@@ -586,23 +603,48 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 
 	if (bulbOff2)
 	{
-		program.sendUniform("lightPoint2.diffuse", bulbOffV);
-		program.sendUniform("lightPoint2.specular", bulbOffV);
+		program.sendUniform("spotlampLight1.diffuse", bulbOffV);
+		program.sendUniform("spotlampLight1.specular", bulbOffV);
+		program.sendUniform("spotlampLight2.diffuse", bulbOffV);
+		program.sendUniform("spotlampLight2.specular", bulbOffV);
+		program.sendUniform("spotlampLight3.diffuse", bulbOffV);
+		program.sendUniform("spotlampLight3.specular", bulbOffV);
 	}
 	else
 	{
 		program.sendUniform("lightAmbient.color", vec3(1, 1, 1));
 		program.sendUniform("materialAmbient", vec3(0.9, 0.9, 0.9));
-		program.sendUniform("lightPoint2.diffuse", bulbOnV);
-		program.sendUniform("lightPoint2.specular", bulbOnV);
+		program.sendUniform("spotlampLight1.diffuse", bulbOnV);
+		program.sendUniform("spotlampLight1.specular", bulbOnV);
+		program.sendUniform("spotlampLight2.diffuse", bulbOnV);
+		program.sendUniform("spotlampLight2.specular", bulbOnV);
+		program.sendUniform("spotlampLight3.diffuse", bulbOnV);
+		program.sendUniform("spotlampLight3.specular", bulbOnV);
+	}
+	
+	for (int i = 0; i < 3; i++)
+	{
+		m = matrixView;
 
+		if (i == 0)
+		{
+			program.sendUniform("spotlampLight1.matrix", m);
+			m = translate(m, bulbLoc7);								// south
+		}
+		if (i == 1)
+		{
+			program.sendUniform("spotlampLight2.matrix", m);
+			m = translate(m, bulbLoc2);								// east
+		}
+		if (i == 2)
+		{
+			program.sendUniform("spotlampLight3.matrix", m);
+			m = translate(m, bulbLoc8);						// north
+		}
+		program.sendUniform("matrixModelView", m);
+		glutSolidSphere(0.32f, 32, 32);
 	}
 
-	m = matrixView;
-	m = translate(m, bulbLoc2);
-	m = scale(m, vec3(0.3f));
-	program.sendUniform("matrixModelView", m);
-	glutSolidSphere(1, 32, 32);
 	program.sendUniform("lightAmbient.color", vec3(0.1, 0.1, 0.1));
 	program.sendUniform("materialAmbient", vec3(0.3, 0.3, 0.3));
 

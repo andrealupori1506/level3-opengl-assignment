@@ -87,7 +87,7 @@ struct SPOT
     // animation
     mat4 matrix;
 };
-uniform SPOT spotLight;
+uniform SPOT spotLight, spotlampLight1,spotlampLight2,spotlampLight3;
 
 vec4 SpotLight(SPOT light)
 {
@@ -139,12 +139,15 @@ void main(void)
 	outColor = ceil(color*toon_color_levels)*toon_scale_factor;
     outColor += DirectionalLight(lightDir);
 	outColor += PointLight(lightPoint1);
-    outColor += PointLight(lightPoint2);
+    //outColor += PointLight(lightPoint2);
 	outColor += PointLight(lightPoint3);
     outColor += PointLight(lightPoint4);
     outColor += PointLight(lightPoint5);
     outColor += PointLight(lightPoint6);
     outColor += SpotLight(spotLight);
+    outColor += SpotLight(spotlampLight1);
+    outColor += SpotLight(spotlampLight2);
+    outColor += SpotLight(spotlampLight3);
 	
 	// base map
     outColor *= texture(texture0, texCoord0);
