@@ -762,10 +762,6 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	glDepthMask(GL_TRUE);
 	program.use();
 
-	// bottom left text camera pos and pitch
-	print(0, 0, std::format("Camera position: ({:.2f}, {:.2f}, {:.2f})", getPos(matrixView).x, getPos(matrixView).y, getPos(matrixView).z));
-	print(0, 20, std::format("Camera Pitch: ({:.2f}), Yaw: ({:.2f}), Roll ({:.2f})", degrees(getPitch(matrixView)), degrees(getYaw(matrixView)), degrees(getRoll(matrixView))));
-
 }
 
 void onRender()
