@@ -432,11 +432,10 @@ bool init()
 	cout << "Use:" << endl;
 	cout << "  WASD or arrow key to navigate" << endl;
 	cout << "  F to swat" << endl;
-	cout << "  QE or PgUp/Dn to move the camera up and down" << endl;
 	cout << "  Shift to speed up your movement" << endl;
 	cout << "  Drag the mouse to look around" << endl;
 	cout << "  1 to toggle day and night lighting" << endl;
-	cout << "  2 to toggle table lamp" << endl;
+	cout << "  2 to toggle lamps" << endl;
 	cout << "  3 to toggle cartoon shader" << endl;
 	cout << "  4 to toggle cat cam" << endl;
 	cout << endl;
@@ -703,7 +702,7 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	{
 		swattingAnimTime += deltaTime;
 		cat.getAnimData(1, swattingAnimTime, swatTransforms);
-		// Resets the animation - With help from Niam Wong!! he's a legend 
+		// Resets the animation - With help from Niam Wong.
 		if (swattingAnimTime * cat.getAnimation(1)->getTicksPerSecond() >= cat.getAnimation(1)->getDuration())
 		{
 			catSwatting = false;
