@@ -3,9 +3,13 @@ OpenGL project of a cartoonish cat in a house environment.
 
 ## Controls
 Press:
+
 1: Toggle environmental lighting
+
 2: Toggle indoor lighting
+
 3: Toggle cartoon shader
+
 4: Toggle camera attachment to the cat
 
 ## Usage
