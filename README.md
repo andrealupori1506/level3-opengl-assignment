@@ -2,6 +2,16 @@
 OpenGL project of a cartoonish cat in a house environment. 
 
 ## Controls
+Drag Mouse to rotate camera
+
+Hold:
+
+WASD or arrow keys: Move
+
+Shift: Speed up movement
+
+F: Play swatting animation
+
 Press:
 
 1: Toggle environmental lighting

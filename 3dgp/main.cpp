@@ -26,20 +26,7 @@ unsigned vertexBuffer = 0;
 unsigned normalBuffer = 0;
 unsigned indexBuffer = 0;
 
-// triangle parts
-float vertices[] = {
--4, 0, -4, 4, 0, -4, 0, 7, 0, -4, 0, 4, 4, 0, 4, 0, 7, 0,
--4, 0, -4, -4, 0, 4, 0, 7, 0, 4, 0, -4, 4, 0, 4, 0, 7, 0,
--4, 0, -4, -4, 0, 4, 4, 0, -4, 4, 0, 4 };
-
-float normals[] = {
-0, 4, -7, 0, 4, -7, 0, 4, -7, 0, 4, 7, 0, 4, 7, 0, 4, 7,
--7, 4, 0, -7, 4, 0, -7, 4, 0, 7, 4, 0, 7, 4, 0, 7, 4, 0,
-0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0 };
-
-unsigned indices[] = {
-0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 13, 14, 15 };
-
+#pragma region ModelAndAnimationVariables
 // 3D models
 C3dglModel cat, wallSegment, wallWindow, floorTile, ceilingLamp, entireKitchenSet, kaykitAssets, bedsheetPink, bedsheetBlue;
 // skinless animations
@@ -48,8 +35,9 @@ float animTime, swattingAnimTime, currentCatRot;
 bool catMoving, catSwatting;
 bool catCamOn = true;
 vec3 currentCatPos;
+#pragma endregion ModelAndAnimationVariables
 
-// Textures
+#pragma region TextureVariables
 // null texture
 GLuint idTexNone;
 // base maps
@@ -57,32 +45,34 @@ GLuint idTexCat, idTexWall, idTexKayKit, idTexPinkSheet, idTexBlueSheet, idTexSm
 
 // normal maps
 GLuint idTexTableNormal, idTexChairNormal, idTexTeapotNormal;
+#pragma endregion TextureVariables
 
 // FBO variables 
 GLuint idTexScreen, idFBO, bufQuad;
 GLuint WImage = 1280, HImage = 720;
 
-// particle systems
-GLuint idBufferVelocity, idBufferStartTime;
-
 // The View Matrix
 mat4 matrixView;
 
+#pragma region ParticleVariables
+// particle systems
+GLuint idBufferVelocity, idBufferStartTime;
 // Particle System Params
 const float PERIOD = 0.01f;
 const float LIFETIME = 2.f;
 const int NPARTICLES = (int)(LIFETIME / PERIOD);
+#pragma endregion ParticleVariables
 
-// bulb variables
+#pragma region LightVariables
 // bulb locations
-vec3 bulbLoc1 = vec3(-12.0f + (2 * 12), 5, -11.6f);
-vec3 bulbLoc2 = vec3(14.35f, 4.8f, 26.f);
-vec3 bulbLoc3 = vec3(-18.8f, 5, 15);
-vec3 bulbLoc4 = vec3(12.0f, 5, 38);
-vec3 bulbLoc5 = vec3(38.0f, 5, 15);
-vec3 bulbLoc6 = vec3(22.78f, 5, 37.65);
-vec3 bulbLoc7 = vec3(-12.9f, 4.8f, 18.44);
-vec3 bulbLoc8 = vec3(34.39f, 4.8f, 5.83f);
+vec3 bulbLocations[8] = {	vec3(-12.0f + (2 * 12), 5, -11.6f), 
+							vec3(14.35f, 4.8f, 26.f),
+							vec3(-18.8f, 5, 15),
+							vec3(12.0f, 5, 38),
+							vec3(38.0f, 5, 15),
+							vec3(22.78f, 5, 37.65),
+							vec3(-12.9f, 4.8f, 18.44),
+							vec3(34.39f, 4.8f, 5.83f) };
 
 // bulb lights
 bool bulbOff1 = false;
@@ -96,11 +86,10 @@ vec3 spotLightLoc = vec3(0.f, 12.f, 0.f);
 // ambient room light
 vec3 ambientRoomLight = vec3(0.2f, 0.06f, 0.2f);
 vec3 ambientRoomMaterial = vec3(0.0f, 0.0f, 0.0f);
+#pragma endregion LightVariables
 
 // Toon toogle
 bool toonLinesOn = false;
-
-
 
 // Camera & navigation
 float maxspeed = 4.f;	// camera max speed
@@ -118,7 +107,7 @@ bool init()
 	glShadeModel(GL_SMOOTH);	// smooth shading mode is the default one; try GL_FLAT here!
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	// this is the default one; try GL_LINE!
 
-	// Shaders ------------------------------------------------------------------------------------------------
+#pragma region InitialiseBasicShaders
 	// Initialise Shaders
 	C3dglShader vertexShader;
 	C3dglShader fragmentShader;
@@ -137,8 +126,9 @@ bool init()
 	if (!program.attach(fragmentShader)) return false;
 	if (!program.link()) return false;
 	if (!program.use(true)) return false;
+#pragma endregion InitialiseBasicShaders
 
-	// load POST PROCESSING shaders ------------------------------------------------
+#pragma region InitialisePostProcessingShaders
 	if (!vertexShader.create(GL_VERTEX_SHADER)) return false;
 	if (!vertexShader.loadFromFile("shaders/effect.vert.shader")) return false;
 	if (!vertexShader.compile()) return false;
@@ -152,8 +142,9 @@ bool init()
 	if (!programEffect.attach(fragmentShader)) return false;
 	if (!programEffect.link()) return false;
 	if (!programEffect.use(true)) return false;
+#pragma endregion InitialisePostProcessingShaders
 
-	// load particle shaders ---------------------------------------------------------
+#pragma region InitialiseParticleShaders
 	if (!vertexShader.create(GL_VERTEX_SHADER)) return false;
 	if (!vertexShader.loadFromFile("shaders/particle.vert.shader")) return false;
 	if (!vertexShader.compile()) return false;
@@ -167,27 +158,15 @@ bool init()
 	if (!programParticle.attach(fragmentShader)) return false;
 	if (!programParticle.link()) return false;
 	if (!programParticle.use(true)) return false;
+#pragma endregion InitialiseParticleShaders
+
 	// switch on: transparency/blending
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	program.use();
 
-	// prepare vertex data
-	glGenBuffers(1, &vertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	// prepare normal data
-	glGenBuffers(1, &normalBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
-
-	// prepare indices array
-	glGenBuffers(1, &indexBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
+#pragma region LoadModelsAndAnimations
 	// Load 3D models 
 	if (!floorTile.load("models\\floor_tiles_kitchen.obj")) return false;
 	if (!wallSegment.load("models\\wall_tiles_kitchen_straight.obj")) return false;
@@ -205,11 +184,11 @@ bool init()
 
 	if (!cat.load("models\\Animated Model\\CatModel.fbx")) return false;
 	cat.loadAnimations(&walk);
-	//cat.loadAnimations(&jump);
 	cat.loadAnimations(&swat);
-	// Load Textures ----------------------------------------------------------------------------------------------------------------------------------
-	// Base maps
+#pragma endregion LoadModelsAndAnimations
 
+#pragma region LoadTextures
+	// Base maps
 	// cat texture
 	C3dglBitmap catTexture;
 	catTexture.load("models/Animated Model/Tex_Cat_Carrot.jpg", GL_RGBA);
@@ -267,13 +246,13 @@ bool init()
 	BYTE bytes[] = { 255, 255, 255 };
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_BGR, GL_UNSIGNED_BYTE, &bytes);
 
-
 	// Send the texture info to the shaders
 	program.sendUniform("texture0", 0);
 	//program.sendUniform("textureNormal", 1);
 	programEffect.sendUniform("texture0", 0);
+#pragma endregion LoadTextures
 
-	// SET UP LIGHTS HERE --------------------------------------------------------------------------------------------------------------------------------
+#pragma region InitialiseLights
 	// ambient light
 	program.sendUniform("lightAmbient.color", ambientRoomLight);
 
@@ -283,11 +262,11 @@ bool init()
 	//program.sendUniform("lightDir.diffuse", vec3(0, 0, 0));
 
 	// point lightS
-	program.sendUniform("lightPoint1.position", bulbLoc1);
-	program.sendUniform("lightPoint3.position", bulbLoc3);
-	program.sendUniform("lightPoint4.position", bulbLoc4);
-	program.sendUniform("lightPoint5.position", bulbLoc5);
-	program.sendUniform("lightPoint5.position", bulbLoc6);
+	program.sendUniform("lightPoint1.position", bulbLocations[0]);
+	program.sendUniform("lightPoint3.position", bulbLocations[2]);
+	program.sendUniform("lightPoint4.position", bulbLocations[3]);
+	program.sendUniform("lightPoint5.position", bulbLocations[4]);
+	program.sendUniform("lightPoint5.position", bulbLocations[5]);
 
 	// spot light
 	program.sendUniform("spotLight.position", spotLightLoc);
@@ -300,28 +279,30 @@ bool init()
 	program.sendUniform("spotLight.isAnimated", true);
 
 	// lamp spotlight
-	program.sendUniform("spotlampLight1.position", bulbLoc7);
+	program.sendUniform("spotlampLight1.position", bulbLocations[6]);
 	program.sendUniform("spotlampLight1.direction", vec3(0, -1, 0));
 	program.sendUniform("spotlampLight1.cutoff", radians(30.f));
 	program.sendUniform("spotlampLight1.attenuation", 7.f);
 	program.sendUniform("spotlampLight1.isAnimated", false);
 
-	program.sendUniform("spotlampLight2.position", bulbLoc2);
+	program.sendUniform("spotlampLight2.position", bulbLocations[1]);
 	program.sendUniform("spotlampLight2.direction", vec3(0, -1, 0));
 	program.sendUniform("spotlampLight2.cutoff", radians(30.f));
 	program.sendUniform("spotlampLight2.attenuation", 7.f);
 	program.sendUniform("spotlampLight2.isAnimated", false);
 
-	program.sendUniform("spotlampLight3.position", bulbLoc8);
+	program.sendUniform("spotlampLight3.position", bulbLocations[7]);
 	program.sendUniform("spotlampLight3.direction", vec3(0, -1, 0));
 	program.sendUniform("spotlampLight3.cutoff", radians(30.f));
 	program.sendUniform("spotlampLight3.attenuation", 7.f);
 	program.sendUniform("spotlampLight3.isAnimated", false);
 
+#pragma endregion InitialiseLights
+
 	glutSetVertexAttribCoord3(program.getAttribLocation("aVertex"));
 	glutSetVertexAttribNormal(program.getAttribLocation("aNormal"));
 
-	// particle system set up ----------------------------------------------------------------------------------------------
+#pragma region InitialiseParticleSystem
 	C3dglBitmap smokeParticleTexture;
 	smokeParticleTexture.load("models/textures/smoke.png", GL_RGBA);
 	if (!smokeParticleTexture.getBits()) return false;
@@ -367,8 +348,9 @@ bool init()
 	glGenBuffers(1, &idBufferStartTime);
 	glBindBuffer(GL_ARRAY_BUFFER, idBufferStartTime);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * bufferStartTime.size(), &bufferStartTime[0], GL_STATIC_DRAW);
+#pragma endregion InitialiseLights
 
-	// Post processing ---------------------------------------------------------------------------------------------
+#pragma region InitialisePostProcessing
 	// First Pass -----------------------------------------------------------------------------
 	// Create screen space texture
 	glGenTextures(1, &idTexScreen);
@@ -441,6 +423,7 @@ bool init()
 	cout << endl;
 
 	return true;
+#pragma endregion InitialisePostProcessing
 }
 
 void renderScene(mat4& matrixView, float time, float deltaTime)
@@ -449,11 +432,7 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	// Camera position
 	vec3 pos = getPos(matrixView);
 
-	// setup material - grey
-
-	// program.sendUniform("materialSpecular", vec3(0,0,0)); - will set ALL BELOW specular light to be OFF and so on - works like the previous material thing
-
-	// wall segments -------------------------------------------------------------------------------
+#pragma region Room
 	// texturing
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, idTexWall);
@@ -520,7 +499,9 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 			}
 		}
 	}
+#pragma endregion Room
 
+#pragma region Furniture
 	// kitchen set
 	m = matrixView;
 	m = translate(m, vec3(-6.75, 0.6f, -8.0f));
@@ -544,9 +525,9 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, idTexBlueSheet);
 	bedsheetBlue.render(m);
+#pragma endregion Furniture
 
-
-	// window lights --------------------------------------------------------------------------------------------------------
+#pragma region Lights
 	program.sendUniform("useNormalMap", false);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, idTexNone);
@@ -590,11 +571,11 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	for (int i = 0; i < 5; i++)
 	{
 		m = matrixView;
-		if (i==0) m = translate(m, bulbLoc1);								// south
-		if (i==1) m = translate(m, bulbLoc3);								// east
-		if (i==2) m = translate(m, bulbLoc4);						// north
-		if (i==3) m = translate(m, bulbLoc5);						// west
-		if (i == 4) m = translate(m, bulbLoc6);						// bathroom
+		if (i==0) m = translate(m, bulbLocations[0]);								// south
+		if (i==1) m = translate(m, bulbLocations[2]);								// east
+		if (i==2) m = translate(m, bulbLocations[3]);						// north
+		if (i==3) m = translate(m, bulbLocations[4]);						// west
+		if (i == 4) m = translate(m, bulbLocations[5]);						// bathroom
 		program.sendUniform("matrixModelView", m);
 		glutSolidCube(4);
 	}
@@ -631,17 +612,17 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 		if (i == 0)
 		{
 			//program.sendUniform("spotlampLight1.matrix", matrixView);
-			m = translate(m, bulbLoc7);								// living room
+			m = translate(m, bulbLocations[6]);								// living room
 		}
 		if (i == 1)
 		{
 			//program.sendUniform("spotlampLight2.matrix", m);
-			m = translate(m, bulbLoc2);								// middle
+			m = translate(m, bulbLocations[1]);								// middle
 		}
 		if (i == 2)
 		{
 			//program.sendUniform("spotlampLight3.matrix", m);
-			m = translate(m, bulbLoc8);						// bedroom
+			m = translate(m, bulbLocations[7]);						// bedroom
 		}
 		program.sendUniform("matrixModelView", m);
 		glutSolidSphere(0.32f, 32, 32);
@@ -684,7 +665,9 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	program.sendUniform("lightAmbient.color", ambientRoomLight);
 	program.sendUniform("materialAmbient", ambientRoomMaterial);
 
-	// Cat ---------------------------------------------------------------------------------------
+#pragma endregion Lights
+	
+#pragma region Cat
 	// Animation set up
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, idTexCat);
@@ -732,8 +715,9 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	m = rotate(m, radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
 	m = scale(m, vec3(0.00005f));
 	cat.render(m);
-
-	// RENDER THE PARTICLE SYSTEM
+#pragma endregion Cat
+	
+#pragma region ParticleSystem
 	programParticle.use();
 	programParticle.sendUniform("camPos", pos);
 
@@ -756,6 +740,8 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	glDrawArrays(GL_POINTS, 0, NPARTICLES);
 	glDisableVertexAttribArray(aVelocity);
 	glDisableVertexAttribArray(aStartTime);
+
+#pragma endregion ParticleSystem
 
 	glActiveTexture(GL_TEXTURE0);
 	glDepthMask(GL_TRUE);
@@ -851,8 +837,6 @@ void onKeyDown(unsigned char key, int x, int y)
 	case 's': _acc.z = -accel; catMoving = true; break;
 	case 'a': _acc.x = accel; catMoving = true; break;
 	case 'd': _acc.x = -accel; catMoving = true; break;
-	//case 'e': _acc.y = accel; break;
-	//case 'q': _acc.y = -accel; break;
 	case '1': bulbOff1 = !bulbOff1; break;
 	case '2': bulbOff2 = !bulbOff2; break;
 	case '3':
@@ -875,8 +859,6 @@ void onKeyUp(unsigned char key, int x, int y)
 	case 's': catMoving = false; _acc.z = _vel.z = 0; break;
 	case 'a': 
 	case 'd': catMoving = false; _acc.x = _vel.x = 0; break;
-	//case 'q':
-	//case 'e': _acc.y = _vel.y = 0; break;
 	case 'f': catSwatting = false; swattingAnimTime = 0; break;
 	
 	}
